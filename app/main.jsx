@@ -9,10 +9,10 @@ import employees from './data';
 const subItemsField = 'employees';
 const expandField = 'expanded';
 
-class MyCell extends React.Component {
-    render() {
-        const { hasChildren, level = [0], expanded, dataItem, format } = this.props;
-        const data = dataItem[this.props.field];
+const MyCell = (props) => {
+
+      const { hasChildren, level = [0], expanded, dataItem, format } = props;
+        const data = dataItem[props.field];
         let dataAsString = '';
 
         if (data !== undefined && data !== null) {
@@ -22,14 +22,14 @@ class MyCell extends React.Component {
         }
 
         const icons = [];
-        if (this.props.expandable) {
+        if (props.expandable) {
             icons.push(...level.slice(1).map((_x, i) => (<span className="k-icon k-i-none" key={i} />)));
             if (hasChildren) {
                 icons.push(
                     <span
                         className={`k-icon k-i-${expanded ? 'collapse' : 'expand'}`}
                         key="expand-collapse"
-                        onClick={event => this.props.onExpandChange(event, dataItem)}
+                        onClick={event => props.onExpandChange(event, dataItem)}
                     />
                 );
             } else {
@@ -37,56 +37,57 @@ class MyCell extends React.Component {
             }
         }
 
-        return (
-            <td
-                style={this.props.style}
-                className={this.props.className}
-                colSpan={this.props.colSpan}
-            >
-                {icons}
-                {dataAsString}
-            </td>
-        );
-    }
+    return (
+        <td
+            style={props.style}
+            className={props.className}
+            colSpan={props.colSpan}
+        >
+            {icons}
+            {dataAsString}
+        </td>
+    );
 }
 
-class App extends React.Component {
-    state = {
-        data: employees.slice(),
-        expanded: [1, 2, 32]
-    }
+const App = (props) => {
 
-    onExpandChange = (e) => {
-        this.setState({
+  const [state, setState] = React.useState({
+      data: employees.slice(),
+      expanded: [1, 2, 32]
+  });
+
+    const onExpandChange = (e) => {
+        setState({
+            ...state,
             expanded: e.value ?
-                this.state.expanded.filter(id => id !== e.dataItem.id) :
-                [...this.state.expanded, e.dataItem.id]
+                state.expanded.filter(id => id !== e.dataItem.id) :
+                [...state.expanded, e.dataItem.id]
         });
     }
-    updateFields = (dataArr) => {
-        const { expanded } = this.state;
+    const updateFields = (dataArr) => {
+        const { expanded } = state;
         return mapTree(dataArr, subItemsField, (item) =>
             extendDataItem(item, subItemsField, {
                 expanded: expanded.includes(item.id)
             })
         );
     }
-    render() {
-        return (
-            <TreeList
-                style={{ maxHeight: '510px', overflow: 'auto' }}
-                data={this.updateFields(this.state.data)}
-                expandField={expandField}
-                subItemsField={subItemsField}
-                onExpandChange={this.onExpandChange}
-                columns={[
-                    { field: 'name', title: 'Name', expandable: true, width: '40%', cell: MyCell },
-                    { field: 'position', title: 'Position', width: '40%' },
-                    { field: 'fullTime', title: 'Full Time', width: '20%' }
-                ]}
-            />
-        );
-    }
+
+      return (
+          <TreeList
+              style={{ maxHeight: '510px', overflow: 'auto' }}
+              data={updateFields(state.data)}
+              expandField={expandField}
+              subItemsField={subItemsField}
+              onExpandChange={onExpandChange}
+              columns={[
+                  { field: 'name', title: 'Name', expandable: true, width: '40%', cell: MyCell },
+                  { field: 'position', title: 'Position', width: '40%' },
+                  { field: 'fullTime', title: 'Full Time', width: '20%' }
+              ]}
+          />
+      );
+
 }
 
 ReactDOM.render(
